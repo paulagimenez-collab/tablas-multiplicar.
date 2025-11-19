@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tablas de Multiplicar Divertidas</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <style>
+        body {
+            background: linear-gradient(120deg, #80d0c7 0%, #f7b42c 100%);
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', Arial, sans-serif;
+            color: #383838;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 0.2em;
+            color: #ff4081;
+        }
+        .mascota {
+            width: 120px;
+            border-radius: 50%;
+        }
+        .niveles {
+            margin: 2em 0 1.5em 0;
+        }
+        .nivel-btn {
+            background: #fff158;
+            border: 2px solid #ff4081;
+            border-radius: 15px;
+            font-size: 1.4em;
+            margin: 0.8em;
+            padding: 0.3em 1.2em;
+            cursor: pointer;
+            box-shadow: 1px 1px 4px #d9a31a;
+            color: #383838;
+            transition: background 0.2s;
+        }
+        .nivel-btn.selected, .nivel-btn:hover {
+            background: #ff92c2;
+            color: #fff;
+        }
+        .container {
+            background: #fffbe7cc;
+            padding: 1.5em;
+            border-radius: 20px;
+            box-shadow: 0 2px 16px #ffdead66;
+            margin: auto;
+            max-width: 580px;
+        }
+        table {
+            margin: auto;
+            width: 95%;
+            font-size: 1.3em;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ffd166;
+            padding: 0.7em;
+        }
+        th {
+            background: #fae389;
+        }
+        td.correcto {
+            background: #a8e063;
+        }
+        td.incorrecto {
+            background: #ff6f91;
+        }
+        input {
+            font-size: 1.2em;
+            text-align: center;
+            width: 60px;
+            padding: 0.3em;
+            border-radius: 8px;
+            border: 1.5px solid #ff4081;
+            margin: 0.2em;
+            transition: background 0.2s, border 0.2s;
+        }
+        input.correcto {
+            background: #d4fc79;
+            border: 2px solid #5cdb95;
+            color: #383838;
+        }
+        input.incorrecto {
+            background: #ffc1fa;
+            border: 2px solid #e34a6f;
+            color: #383838;
+        }
+        .feedback {
+            margin-top: 1em;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #255c3c;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://raw.githubusercontent.com/paulagimenez-collab/Tablas-de-multiplicar-/main/mascota.png" class="mascota" alt="Mascota sonriente">
+    <h1>Tablas de Multiplicar Divertidas</h1>
+    <div class="niveles">
+        <button class="nivel-btn" onclick="showLevel(1)" id="btn1">Nivel 1</button>
+        <button class="nivel-btn" onclick="showLevel(2)" id="btn2">Nivel 2</button>
+        <button class="nivel-btn" onclick="showLevel(3)" id="btn3">Nivel 3</button>
+    </div>
+    <div class="container" id="panel">
+        <!-- El panel de actividad se llenará dinámicamente -->
+    </div>
+    <script>
+        const panel = document.getElementById('panel');
+        const btns = [document.getElementById('btn1'), document.getElementById('btn2'), document.getElementById('btn3')];
+        let nivelActual = 1;
+
+        // Generar las tablas
+        function generarTabla(respuestas=false, inputs=false, ayuda=false) {
+            let html = '<table><thead><tr><th>Multiplicación</th><th>Resultado</th></tr></thead><tbody>';
+            for (let n = 0; n <= 10; n++) {
+                for (let m = 0; m <= 10; m++) {
+                    html += `<tr><td>${n} x ${m}</td><td>`;
+                    if (inputs) {
+                        html += `<input type="number" min="0" max="100" data-resultado="${n*m}" oninput="chequearInput(this,${ayuda})">`;
+                    } else {
+                        html += respuestas ? `<span>${n*m}</span>` : '<span>?</span>';
+                    }
+                    html += '</td></tr>';
+                }
+            }
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // Mostrar nivel
+        function showLevel(nivel) {
+            nivelActual = nivel;
+            btns.forEach((b,i)=>b.classList.toggle('selected',i+1==nivel));
+            let html = '';
+            if (nivel===1) {
+                html += "<h2>Nivel 1: Reconocimiento Visual</h2>";
+                html += `<p>Observa y memoriza las tablas de multiplicar:</p>`;
+                html += generarTabla(true,false,false);
+            } else if (nivel===2) {
+                html += "<h2>Nivel 2: Práctica guiada</h2>";
+                html += `<p>Completa las respuestas. Los colores te muestran si el resultado es correcto (verde) o incorrecto (rosa).</p>`;
+                html += generarTabla(false,true,true);
+            } else if (nivel===3) {
+                html += "<h2>Nivel 3: Práctica autónoma</h2>";
+                html += `<p>Completa todas las respuestas y haz clic en <b>Comprobar respuestas</b>.</p>`;
+                html += generarTabla(false,true,false);
+                html += `<button onclick="comprobarTodo()" style="margin-top:1em;font-size:1.2em;background:#ff92c2;color:#fff;border-radius:10px;padding:0.4em 1.5em;">Comprobar respuestas</button>`;
+                html += `<div id="feedback" class="feedback"></div>`;
+            }
+            panel.innerHTML = html;
+        }
+
+        // Chequear input Nivel 2 (ayuda visual inmediata)
+        function chequearInput(input, ayuda) {
+            const val = parseInt(input.value);
+            const esperado = parseInt(input.dataset.resultado);
+            if (!isNaN(val)) {
+                if (val === esperado) {
+                    input.classList.add("correcto");
+                    input.classList.remove("incorrecto");
+                } else {
+                    input.classList.remove("correcto");
+                    if (ayuda) input.classList.add("incorrecto");
+                    else input.classList.remove("incorrecto");
+                }
+            } else {
+                input.classList.remove("correcto","incorrecto");
+            }
+        }
+
+        // Comprobar todas respuestas Nivel 3
+        function comprobarTodo() {
+            const inputs = panel.querySelectorAll('input[type="number"]');
+            let correctos = 0;
+            inputs.forEach(input=>{
+                const val = parseInt(input.value);
+                const esperado = parseInt(input.dataset.resultado);
+                if (!isNaN(val) && val===esperado) {
+                    input.classList.add("correcto");
+                    input.classList.remove("incorrecto");
+                    correctos++;
+                } else {
+                    input.classList.remove("correcto");
+                    input.classList.add("incorrecto");
+                }
+            });
+            const total = inputs.length;
+            let feedback = document.getElementById("feedback");
+            if (correctos===total) {
+                feedback.textContent = "¡Genial! Todas las respuestas son correctas 😸";
+                feedback.style.color = "#2bc97b";
+            } else if (correctos > 0) {
+                feedback.textContent = `Has acertado ${correctos} de ${total} respuestas. ¡Intenta mejorar aún más!`;
+                feedback.style.color = "#f6ba2d";
+            } else {
+                feedback.textContent = "No hay ninguna respuesta correcta aún. ¡Ánimo!";
+                feedback.style.color = "#e34a6f";
+            }
+        }
+
+        // Mostrar nivel inicial al cargar
+        window.onload = ()=>showLevel(1);
+    </script>
+</body>
+</html>
